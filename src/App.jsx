@@ -23,7 +23,7 @@ export default function App() {
   )
 }*/
 
-import { useEffect, useState } from "react";
+/*import { useEffect, useState } from "react";
 import { getFixtures } from "./lib/apiFootball";
 
 export default function App() {
@@ -68,3 +68,33 @@ export default function App() {
     </div>
   );
 }
+
+*/
+
+import { useEffect, useState } from "react";
+import { getFixtures } from "./api/getFixtures";
+
+function App() {
+  const [fixtures, setFixtures] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await getFixtures();
+      setFixtures(data);
+    };
+    load();
+  }, []);
+
+  return (
+    <div>
+      <h1>Partidos</h1>
+      {fixtures.map((f) => (
+        <div key={f.fixture.id}>
+          {f.teams.home.name} vs {f.teams.away.name}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default App;

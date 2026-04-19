@@ -1,6 +1,6 @@
 
 
-/*
+///*
 
   // 🚀 ===== MODO LOCAL (Serverless) =====
 
@@ -11,8 +11,11 @@
   return data;
 }
 
-*/
-///*
+
+
+
+//*/
+/*
   // 🚀 ===== MODO VERCEL (Serverless) =====
   export async function getFixtures() {
 
@@ -22,7 +25,17 @@
   return data.response;
 }
 
-//*/
+*/
 
+/*
+export const getFixtures = async () => {
+  const res = await fetch('/api/fixtures');
+  const data = await res.json();
 
+  console.log("DATA REAL:", data);
+
+  return data.response;   // 👈 ESTA ES LA CLAVE
+};
+
+*/
 
