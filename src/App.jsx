@@ -42,7 +42,7 @@ export default function App() {
       <h1 className="text-2xl font-bold mb-4">Partidos</h1>
 
       <div className="space-y-3">
-        {fixtures.map((match) => (
+      {Array.isArray(fixtures) && fixtures.map((match) => (
           <div
             key={match.fixture.id}
             className="bg-slate-800 p-3 rounded-lg shadow"
