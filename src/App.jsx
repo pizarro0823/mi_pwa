@@ -85,14 +85,34 @@ function App() {
     load();
   }, []);
 
-  return (
-    <div>
-      <h1>Partidos</h1>
-      {fixtures.map((f) => (
-        <div key={f.fixture.id}>
-          {f.teams.home.name} vs {f.teams.away.name}
-        </div>
-      ))}
+    return (
+    <div className="min-h-screen bg-slate-900 text-white p-4">
+      <h1 className="text-2xl font-bold mb-4">Partidos</h1>
+
+      <div className="space-y-3">
+      {Array.isArray(fixtures) && fixtures.map((match) => (
+          <div
+            key={match.fixture.id}
+            className="bg-slate-800 p-3 rounded-lg shadow"
+          >
+            <p className="text-sm text-gray-400">
+              {new Date(match.fixture.date).toLocaleString()}
+            </p>
+
+            <div className="flex justify-between items-center mt-2">
+              <span>{match.teams.home.name}</span>
+              <span className="font-bold">
+                {match.goals.home ?? "-"} : {match.goals.away ?? "-"}
+              </span>
+              <span>{match.teams.away.name}</span>
+            </div>
+
+            <p className="text-xs text-gray-400 mt-1">
+              {match.league.name}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
