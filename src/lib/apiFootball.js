@@ -4,14 +4,16 @@
 
   // 🚀 ===== MODO LOCAL (Serverless) =====
 
- export async function getFixtures() {
-  const res = await fetch("http://localhost:3000/api/fixtures");
-  const data = await res.json();
- console.log("API DATA 👉", data); // 👈 IMPORTANTE
-  return data;
+export async function getFixtures() {
+  const isLocal = window.location.hostname === "localhost";
+
+  const url = isLocal
+    ? "http://localhost:3001/api/fixtures"
+    : "/api/fixtures";
+
+  const res = await fetch(url);
+  return res.json();
 }
-
-
 
 
 //*/

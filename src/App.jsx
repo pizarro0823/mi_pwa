@@ -1,120 +1,93 @@
-/*import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabase'
+// src/App.jsx
+import { useEffect, useMemo, useState } from "react";
+import MatchCard from "./components/MatchCard";
+import "./App.css";
 
 export default function App() {
-  const [pedidos, setPedidos] = useState([])
+  const [matches, setMatches] = useState([]);
+  const [phase, setPhase] = useState("groups");
+  const [group, setGroup] = useState("Group A");
 
   useEffect(() => {
-    const cargar = async () => {
-      const { data } = await supabase.from('teams').select('*')
-      setPedidos(data)
-    }
-    cargar()
-  }, [])
-
-  return (
-    <div className="p-4">
-      {pedidos.map(p => (
-        <div key={p.id}>
-          Mesa {p.name} 
-        </div>
-      ))}
-    </div>
-  )
-}*/
-
-/*import { useEffect, useState } from "react";
-import { getFixtures } from "./lib/apiFootball";
-
-export default function App() {
-  const [fixtures, setFixtures] = useState([]);
-
-  useEffect(() => {
-    async function loadData() {
-      const data = await getFixtures();
-      setFixtures(data.response); // aquí vienen los partidos
-    }
-    loadData();
+    fetch(
+    "https://cdn.jsdelivr.net/gh/pizarro0823/worldcup.json@master/2026/worldcup.json",
+      
+    )
+      .then((res) => res.json())
+      .then((data) => setMatches(data.matches));
   }, []);
 
+  // 🔥 Detectar fase automáticamente según el nombre de la ronda del JSON
+  const detectPhase = (round) => {
+    if (round.toLowerCase().includes("matchday")) return "groups";
+    if (round.includes("32")) return "32";
+    if (round.toLowerCase().includes("octavos")) return "octavos";
+    if (round.toLowerCase().includes("cuartos")) return "cuartos";
+    if (round.toLowerCase().includes("semi")) return "semis";
+    if (round.toLowerCase().includes("final")) return "final";
+    return "groups";
+  };
+
+  // 🔽 Opciones del combo
+  const phases = [
+    { value: "groups", label: "Fase de grupos (todos contra todos)" },
+    { value: "32", label: "Ronda de 32" },
+    { value: "octavos", label: "Octavos de final" },
+    { value: "final", label: "Cuartos de final" },
+    { value: "semis", label: "Semifinales" },
+    { value: "final", label: "Final" },
+  ];
+
+  // 🎯 Filtrar partidos según fase y grupo
+  const filteredMatches = useMemo(() => {
+    return matches.filter((m) => {
+      const p = detectPhase(m.round);
+      if (p !== phase) return false;
+      if (phase === "groups") return m.group === group;
+      return true;
+    });
+  }, [matches, phase, group]);
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-4">
-      <h1 className="text-2xl font-bold mb-4">Partidos</h1>
+    <div className="container">
+      <h2>World Cup 2026</h2>
 
-      <div className="space-y-3">
-      {Array.isArray(fixtures) && fixtures.map((match) => (
-          <div
-            key={match.fixture.id}
-            className="bg-slate-800 p-3 rounded-lg shadow"
-          >
-            <p className="text-sm text-gray-400">
-              {new Date(match.fixture.date).toLocaleString()}
-            </p>
+      {/* 🔽 Combo fases */}
+      <div className="round-select">
+        <label>Elige la fase</label>
+        <select value={phase} onChange={(e) => setPhase(e.target.value)}>
+          {phases.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-            <div className="flex justify-between items-center mt-2">
-              <span>{match.teams.home.name}</span>
-              <span className="font-bold">
-                {match.goals.home ?? "-"} : {match.goals.away ?? "-"}
-              </span>
-              <span>{match.teams.away.name}</span>
-            </div>
+      {/* 🧭 Tabs grupos (solo en fase grupos) */}
+     {phase === "groups" && (
+  <div className="groups-tabs">
+    {["A","B","C","D","E","F","G","H"].map((g) => {
+      const current = `Group ${g}`;
 
-            <p className="text-xs text-gray-400 mt-1">
-              {match.league.name}
-            </p>
-          </div>
+      return (
+        <button
+          key={g}
+          onClick={() => setGroup(current)}
+          className={`group-tab ${group === current ? "active" : ""}`}
+        >
+           {g}
+        </button>
+      );
+    })}
+  </div>
+)}  
+      {/* Partidos */}
+      <div className="matches">
+        {filteredMatches.map((m, i) => (
+          <MatchCard key={i} match={m} />
         ))}
       </div>
     </div>
   );
 }
-
-*/
-
-import { useEffect, useState } from "react";
-import { getFixtures } from "./api/getFixtures";
-
-function App() {
-  const [fixtures, setFixtures] = useState([]);
-
-  useEffect(() => {
-    const load = async () => {
-      const data = await getFixtures();
-      setFixtures(data);
-    };
-    load();
-  }, []);
-
-    return (
-    <div className="min-h-screen bg-slate-900 text-white p-4">
-      <h1 className="text-2xl font-bold mb-4">Partidos</h1>
-
-      <div className="space-y-3">
-      {Array.isArray(fixtures) && fixtures.map((match) => (
-          <div
-            key={match.fixture.id}
-            className="bg-slate-800 p-3 rounded-lg shadow"
-          >
-            <p className="text-sm text-gray-400">
-              {new Date(match.fixture.date).toLocaleString()}
-            </p>
-
-            <div className="flex justify-between items-center mt-2">
-              <span>{match.teams.home.name}</span>
-              <span className="font-bold">
-                {match.goals.home ?? "-"} : {match.goals.away ?? "-"}
-              </span>
-              <span>{match.teams.away.name}</span>
-            </div>
-
-            <p className="text-xs text-gray-400 mt-1">
-              {match.league.name}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default App;
