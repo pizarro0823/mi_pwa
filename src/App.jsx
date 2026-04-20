@@ -79,7 +79,7 @@ export default function App() {
       {/* 🧭 Tabs grupos (solo en fase grupos) */}
      {phase === "groups" && (
   <div className="groups-tabs">
-    {["A","B","C","D","E","F","G","H"].map((g) => {
+    {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
       const current = `Group ${g}`;
 
       return (
