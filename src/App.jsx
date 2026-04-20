@@ -44,9 +44,9 @@ export default function App() {
   const phases = [
     { value: "groups", label: "Fase de grupos (todos contra todos)" },
     { value: "32", label: "Ronda de 32" },
-    { value: "octavos", label: "Octavos de final" },
+    { value: "Round of 16", label: "Octavos de final 16" },
     { value: "final", label: "Cuartos de final" },
-    { value: "semis", label: "Semifinales" },
+    { value: "semi", label: "Semifinales" },
     { value: "final", label: "Final" },
   ];
 
@@ -78,12 +78,13 @@ export default function App() {
 
       {/* 🧭 Tabs grupos (solo en fase grupos) */}
      {phase === "groups" && (
+      
   <div className="groups-tabs">
     {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
       const current = `Group ${g}`;
 
       return (
-        <button
+       <button
           key={g}
           onClick={() => setGroup(current)}
           className={`group-tab ${group === current ? "active" : ""}`}

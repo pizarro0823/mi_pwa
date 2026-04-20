@@ -1,6 +1,6 @@
 // src/components/MatchCard.jsx
 import { getFlagUrl } from "../data/flags";
-
+import "./MatchCard.css";
 
 export default function MatchCard({ match, matchId, score, onScoreChange }) {
   return (
@@ -13,10 +13,10 @@ export default function MatchCard({ match, matchId, score, onScoreChange }) {
       {/* Equipos y marcador */}
       <div className="teams-row">
         {/* Equipo 1 */}
-        <div className="team">
-          <img src={getFlagUrl(match.team1)} className="flag" />
-          <span>{match.team1}</span>
-        </div>
+        <div className="team vertical">
+  <img src={getFlagUrl(match.team1)} className="flag" />
+  <span className="team-name">{match.team1}</span>
+</div>
 
 {/* Inputs marcador conectados al partido */}
 <div className="score-inputs">
@@ -40,10 +40,10 @@ export default function MatchCard({ match, matchId, score, onScoreChange }) {
 </div>
 
         {/* Equipo 2 */}
-        <div className="team">
-          <span>{match.team2}</span>
-          <img src={getFlagUrl(match.team2)} className="flag" />
-        </div>
+        <div className="team vertical">
+  <img src={getFlagUrl(match.team2)} className="flag" />
+  <span className="team-name">{match.team2}</span>
+</div>
       </div>
 
       {/* Info del partido */}
