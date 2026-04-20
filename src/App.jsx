@@ -7,6 +7,17 @@ export default function App() {
   const [matches, setMatches] = useState([]);
   const [phase, setPhase] = useState("groups");
   const [group, setGroup] = useState("Group A");
+  const [scores, setScores] = useState({});
+
+  const handleScoreChange = (matchId, team, value) => {
+  setScores((prev) => ({
+    ...prev,
+    [matchId]: {
+      ...prev[matchId],
+      [team]: value,
+    },
+  }));
+};
 
   useEffect(() => {
     fetch(
@@ -27,6 +38,7 @@ export default function App() {
     if (round.toLowerCase().includes("final")) return "final";
     return "groups";
   };
+  
 
   // 🔽 Opciones del combo
   const phases = [
@@ -84,9 +96,21 @@ export default function App() {
 )}  
       {/* Partidos */}
       <div className="matches">
-        {filteredMatches.map((m, i) => (
-          <MatchCard key={i} match={m} />
-        ))}
+        <div className="matches">
+  {filteredMatches.map((m, i) => {
+    const matchId = `${m.team1}-${m.team2}-${m.date}`;
+
+    return (
+      <MatchCard
+        key={i}
+        match={m}
+        matchId={matchId}
+        score={scores[matchId] || {}}
+        onScoreChange={handleScoreChange}
+      />
+    );
+  })}
+</div>
       </div>
     </div>
   );

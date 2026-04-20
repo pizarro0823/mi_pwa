@@ -1,7 +1,8 @@
 // src/components/MatchCard.jsx
 import { getFlagUrl } from "../data/flags";
 
-export default function MatchCard({ match }) {
+
+export default function MatchCard({ match, matchId, score, onScoreChange }) {
   return (
     <div className="card">
       {/* Encabezado */}
@@ -17,12 +18,26 @@ export default function MatchCard({ match }) {
           <span>{match.team1}</span>
         </div>
 
-        {/* Inputs marcador */}
-        <div className="score-inputs">
-          <input type="number" min="0" />
-          <span>:</span>
-          <input type="number" min="0" />
-        </div>
+{/* Inputs marcador conectados al partido */}
+<div className="score-inputs">
+  <input
+    type="number"
+    min="0"
+    value={score.home || ""}
+    onChange={(e) =>
+      onScoreChange(matchId, "home", e.target.value)
+    }
+  />
+  <span>:</span>
+  <input
+    type="number"
+    min="0"
+    value={score.away || ""}
+    onChange={(e) =>
+      onScoreChange(matchId, "away", e.target.value)
+    }
+  />
+</div>
 
         {/* Equipo 2 */}
         <div className="team">
