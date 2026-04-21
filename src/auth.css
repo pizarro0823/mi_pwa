@@ -1,0 +1,79 @@
+/* Fondo degradado */
+.auth-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #ffffff, #ffffff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  padding: 20px;
+}
+
+/* Logo arriba */
+.auth-logo {
+  width: 140px;
+  object-fit: contain;
+}
+
+/* Tarjeta blanca */
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  padding: 35px 30px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: center;
+}
+
+/* Título */
+.auth-title {
+  color: #5b2dff;
+  margin-bottom: 10px;
+}
+
+/* Inputs */
+.auth-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.auth-input:focus {
+  border-color: #6c3cff;
+  box-shadow: 0 0 0 3px rgba(108, 60, 255, 0.15);
+}
+
+/* Botón */
+.auth-button {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #6c3cff;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Link */
+.auth-link {
+  margin-top: 8px;
+  color: #000;
+  cursor: pointer;
+  font-size: 14px;
+}

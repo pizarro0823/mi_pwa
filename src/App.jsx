@@ -1,23 +1,36 @@
-// src/App.jsx
+
+import SplashScreen from "./SplashScreen";
 import { useEffect, useMemo, useState } from "react";
 import MatchCard from "./components/MatchCard";
 import "./App.css";
+import Auth from "./Auth";
 
 export default function App() {
   const [matches, setMatches] = useState([]);
   const [phase, setPhase] = useState("groups");
   const [group, setGroup] = useState("Group A");
   const [scores, setScores] = useState({});
+  const [user, setUser] = useState(null);
+
+    // 👇 NUEVO estado del splash
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleScoreChange = (matchId, team, value) => {
-  setScores((prev) => ({
-    ...prev,
-    [matchId]: {
-      ...prev[matchId],
-      [team]: value,
-    },
-  }));
-};
+    setScores((prev) => ({
+      ...prev,
+      [matchId]: {
+        ...prev[matchId],
+        [team]: value,
+      },
+    }));
+  };
+
+
 
   useEffect(() => {
     fetch(
@@ -59,6 +72,12 @@ export default function App() {
       return true;
     });
   }, [matches, phase, group]);
+
+    if (loading) return <SplashScreen />;
+
+    if (!user) {
+  return <Auth onLogin={(alias) => setUser(alias)} />;
+}
 
   return (
     <div className="container">
