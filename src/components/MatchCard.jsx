@@ -2,7 +2,7 @@
 import { getFlagUrl } from "../data/flags";
 import "./MatchCard.css";
 
-export default function MatchCard({ match, matchId, score, onScoreChange }) {
+export default function MatchCard({ match, matchId, score, onScoreChange, locked }) {
   return (
     <div className="card">
       {/* Encabezado */}
@@ -14,36 +14,36 @@ export default function MatchCard({ match, matchId, score, onScoreChange }) {
       <div className="teams-row">
         {/* Equipo 1 */}
         <div className="team vertical">
-  <img src={getFlagUrl(match.team1)} className="flag" />
-  <span className="team-name">{match.team1}</span>
-</div>
+          <img src={getFlagUrl(match.team1)} className="flag" />
+          <span className="team-name">{match.team1}</span>
+        </div>
 
-{/* Inputs marcador conectados al partido */}
-<div className="score-inputs">
-  <input
-    type="number"
-    min="0"
-    value={score.home || ""}
-    onChange={(e) =>
-      onScoreChange(matchId, "home", e.target.value)
-    }
-  />
-  <span>:</span>
-  <input
-    type="number"
-    min="0"
-    value={score.away || ""}
-    onChange={(e) =>
-      onScoreChange(matchId, "away", e.target.value)
-    }
-  />
-</div>
+        {/* Marcadores */}
+        <div className="score-inputs">
+          <input
+            type="number"
+            min="0"
+            value={score?.home ?? ""}
+            onChange={(e) =>
+              onScoreChange(matchId, "home", e.target.value)
+            }
+          />
+          <span>:</span>
+          <input
+            type="number"
+            min="0"
+            value={score?.away ?? ""}
+            onChange={(e) =>
+              onScoreChange(matchId, "away", e.target.value)
+            }
+          />
+        </div>
 
         {/* Equipo 2 */}
         <div className="team vertical">
-  <img src={getFlagUrl(match.team2)} className="flag" />
-  <span className="team-name">{match.team2}</span>
-</div>
+          <img src={getFlagUrl(match.team2)} className="flag" />
+          <span className="team-name">{match.team2}</span>
+        </div>
       </div>
 
       {/* Info del partido */}

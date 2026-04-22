@@ -11,7 +11,18 @@ function Participantes() {
 }
 
 function Perfil() {
-  return <div style={{ padding: 20 }}>Perfil del usuario</div>;
+  return <div style={{ padding: 20 }}>Perfil del usuario 
+  
+    <button
+  onClick={() => {
+    window.location.reload();
+    localStorage.removeItem("user");
+    setUser(null);
+  }}
+>CERRAR SECCION
+</button>
+  
+  </div>;
 }
 
 export default function Tabs() {
