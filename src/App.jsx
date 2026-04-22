@@ -10,7 +10,16 @@ export default function App() {
   const [phase, setPhase] = useState("groups");
   const [group, setGroup] = useState("Group A");
   const [scores, setScores] = useState({});
-  const [user, setUser] = useState(null);
+ 
+
+const [user, setUser] = useState(
+  JSON.parse(localStorage.getItem("user"))
+);
+
+
+const handleLogin = (userData) => {
+  setUser(userData);
+};
 
     // 👇 NUEVO estado del splash
   const [loading, setLoading] = useState(true);
@@ -79,59 +88,75 @@ export default function App() {
   return <Auth onLogin={(alias) => setUser(alias)} />;
 }
 
-  return (
-    <div className="container">
-      <h2>World Cup 2026</h2>
 
-      {/* 🔽 Combo fases */}
-      <div className="round-select">
-        <label>Elige la fase</label>
-        <select value={phase} onChange={(e) => setPhase(e.target.value)}>
-          {phases.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
+if (!user) {
+  return <Auth onLogin={handleLogin} />;
+}
+
+ return (
+  <div className="page">
+    <div className="header-card">
+     
+      <div className="header-row">
+        <div className="welcome">
+          <span>Bienvenido</span>
+          <strong>{user.name}</strong>
+        </div>
+
+    
       </div>
 
-      {/* 🧭 Tabs grupos (solo en fase grupos) */}
-     {phase === "groups" && (
-      
-  <div className="groups-tabs">
-    {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
-      const current = `Group ${g}`;
-
-      return (
-       <button
-          key={g}
-          onClick={() => setGroup(current)}
-          className={`group-tab ${group === current ? "active" : ""}`}
-        >
-           {g}
-        </button>
-      );
-    })}
-  </div>
-)}  
-      {/* Partidos */}
-      <div className="matches">
-        <div className="matches">
-  {filteredMatches.map((m, i) => {
-    const matchId = `${m.team1}-${m.team2}-${m.date}`;
-
-    return (
-      <MatchCard
-        key={i}
-        match={m}
-        matchId={matchId}
-        score={scores[matchId] || {}}
-        onScoreChange={handleScoreChange}
-      />
-    );
-  })}
-</div>
+    <div className="phase-select">
+          <label>Elige la fase</label>
+          <select value={phase} onChange={(e) => setPhase(e.target.value)}>
+            {phases.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
+
+
+    {/* 🧭 Tabs grupos */}
+    {phase === "groups" && (
+      <div className="groups-bar">
+    <span className="groups-label">Grupos:</span>
+
+    <div className="groups-list">
+      {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
+        const current = `Group ${g}`;
+
+        return (
+          <span
+            key={g}
+            onClick={() => setGroup(current)}
+            className={`group-pill ${group === current ? "active" : ""}`}
+          >
+            {g}
+          </span>
+        );
+      })}
     </div>
-  );
+  </div>
+)}
+
+    {/* Partidos */}
+    <div className="matches">
+      {filteredMatches.map((m, i) => {
+        const matchId = `${m.team1}-${m.team2}-${m.date}`;
+        return (
+          <MatchCard
+            key={i}
+            match={m}
+            matchId={matchId}
+            score={scores[matchId] || {}}
+            onScoreChange={handleScoreChange}
+          />
+        );
+      })}
+    </div>
+  </div>
+);
 }

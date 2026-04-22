@@ -1,0 +1,49 @@
+/* Contenedor general */
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Contenido arriba */
+.tabs-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 70px;
+}
+
+/* Barra inferior */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 65px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.08);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+/* Cada ítem */
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  cursor: pointer;
+  color: #777;
+  transition: 0.2s;
+}
+
+.tab-item span {
+  margin-top: 4px;
+}
+
+.tab-item.active {
+  color: #4f46e5;
+  font-weight: 600;
+  transform: translateY(-2px);
+}
