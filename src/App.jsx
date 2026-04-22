@@ -102,9 +102,17 @@ if (!user) {
           <span>Bienvenido</span>
           <strong>{user.name}</strong>
         </div>
-
-    
       </div>
+
+      <button
+  onClick={() => {
+    window.location.reload();
+    localStorage.removeItem("user");
+    setUser(null);
+  }}
+>
+  Cerrar sesión
+</button>
 
     <div className="phase-select">
           <label>Elige la fase</label>

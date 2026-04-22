@@ -57,8 +57,8 @@ export default function Auth({ onLogin }) {
       alert("Usuario inactivo o datos incorrectos");
     } else {
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.reload();
+  localStorage.setItem("user", JSON.stringify(data));
+window.location.reload();
 
      // localStorage.setItem("user", JSON.stringify(data));
      // onLogin(data); // ← enviamos el usuario completo a App
@@ -80,6 +80,8 @@ export default function Auth({ onLogin }) {
             onChange={(e) => setName(e.target.value)}
           />
         )}
+
+        
 
         <input
           type="number"
@@ -104,6 +106,7 @@ export default function Auth({ onLogin }) {
           {isNew ? "Ya estoy registrado" : "Usuario nuevo"}
         </p>
       </div>
+    
     </div>
   );
 }
