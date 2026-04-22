@@ -1,15 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
 import Tabs from "./Tabs";
-import App from './App.jsx'
+import Auth from "./Auth";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Tabs />
-  </StrictMode>,
-)
+const user = JSON.parse(localStorage.getItem("user"));
 
+ReactDOM.createRoot(document.getElementById("root")).render(
+  user ? <Tabs /> : <Auth />
+);
 // ❌ COMENTA ESTO POR AHORA
 /*
 if ('serviceWorker' in navigator) {

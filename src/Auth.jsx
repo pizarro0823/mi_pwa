@@ -56,8 +56,12 @@ export default function Auth({ onLogin }) {
     if (error || !data) {
       alert("Usuario inactivo o datos incorrectos");
     } else {
-      localStorage.setItem("user", JSON.stringify(data));
-      onLogin(data); // ← enviamos el usuario completo a App
+
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.reload();
+
+     // localStorage.setItem("user", JSON.stringify(data));
+     // onLogin(data); // ← enviamos el usuario completo a App
     }
   };
 
