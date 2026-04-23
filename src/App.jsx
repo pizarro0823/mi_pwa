@@ -16,6 +16,9 @@ import Auth from "./Auth";
 // Conexión a Supabase
 import { supabase } from "./lib/supabase";
 
+// Conexion con el contador cuenta regresiva
+import useCountdown from "./hooks/useCountdown";
+
 export default function App() {
 
   // ---------------- ESTADOS PRINCIPALES ----------------
@@ -37,19 +40,11 @@ export default function App() {
     JSON.parse(localStorage.getItem("user"))
   );
 
+  // Cuenta regresiva
+const { timeLeft, locked } = useCountdown(matches);
+
   // Splash inicial
   const [loading, setLoading] = useState(true);
-
-  // Contador regresivo
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  // Bloqueo de marcadores
-  const [locked, setLocked] = useState(false);
 
   // Función para mostrar siempre 2 dígitos (08, 09, etc)
   const pad = (n) => String(n).padStart(2, "0");
@@ -74,53 +69,7 @@ export default function App() {
       });
   }, []);
 
-  // ---------------- CONTADOR Y BLOQUEO ----------------
-  useEffect(() => {
-    if (!matches.length) return;
-
-    // Buscar el primer partido del mundial
-    const firstMatch = matches.reduce((earliest, current) => {
-      const d1 = new Date(`${earliest.date} ${earliest.time}`);
-      const d2 = new Date(`${current.date} ${current.time}`);
-      return d2 < d1 ? current : earliest;
-    });
-
-    // Convertimos la fecha del JSON a formato válido
-    const [day, month, year] = firstMatch.date.split("/");
-
-    const firstMatchDate = new Date(
-      `${year}-${month}-${day}T${firstMatch.time}:00`
-    ).getTime();
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const diff = firstMatchDate - now;
-
-      // Si ya empezó el mundial
-      if (diff <= 0) {
-        setLocked(true);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        clearInterval(interval);
-        return;
-      }
-
-      // Si faltan 24h, bloquear edición
-      if (diff <= 24 * 60 * 60 * 1000) {
-        setLocked(true);
-      }
-
-      // Calcular días, horas, minutos, segundos
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [matches]);
+ 
 
   // ---------------- CUANDO EL USUARIO ESCRIBE MARCADOR ----------------
   const handleScoreChange = (matchId, team, value) => {
