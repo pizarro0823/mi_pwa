@@ -1,22 +1,35 @@
+// Pantalla splash inicial
 import SplashScreen from "./SplashScreen";
+
+// Hooks de React
 import { useEffect, useMemo, useState } from "react";
+
+// Componente de cada partido
 import MatchCard from "./components/MatchCard";
+
+// Estilos
 import "./App.css";
+
+// Pantalla de login
 import Auth from "./Auth";
+
+// Conexión a Supabase
 import { supabase } from "./lib/supabase";
 
 export default function App() {
 
-  // Partidos del JSON
+  // ---------------- ESTADOS PRINCIPALES ----------------
+
+  // Lista de partidos del JSON
   const [matches, setMatches] = useState([]);
 
-  // Fase seleccionada
+  // Fase seleccionada (grupos, octavos, etc)
   const [phase, setPhase] = useState("groups");
 
   // Grupo seleccionado
   const [group, setGroup] = useState("Group A");
 
-  // Marcadores escritos por partido (clave = ID REAL del partido)
+  // Marcadores escritos (clave = ID ÚNICO DEL PARTIDO)
   const [scores, setScores] = useState({});
 
   // Usuario logueado
@@ -24,115 +37,160 @@ export default function App() {
     JSON.parse(localStorage.getItem("user"))
   );
 
-  const [countdown, setCountdown] = useState("");
-const [locked, setLocked] = useState(false);
-
-  // Splash
+  // Splash inicial
   const [loading, setLoading] = useState(true);
 
+  // Contador regresivo
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Bloqueo de marcadores
+  const [locked, setLocked] = useState(false);
+
+  // Función para mostrar siempre 2 dígitos (08, 09, etc)
+  const pad = (n) => String(n).padStart(2, "0");
+
+  // ---------------- SPLASH ----------------
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Cuando se escribe un marcador
-const handleScoreChange = (matchId, team, value) => {
-  setScores((prev) => {
-    const updated = {
-      ...prev,
-      [matchId]: {
-        ...prev[matchId],
-        [team]: value,
-      },
+  // ---------------- TRAER PARTIDOS DEL JSON ----------------
+  useEffect(() => {
+    fetch("https://cdn.jsdelivr.net/gh/pizarro0823/worldcup.json@master/2026/worldcup.json")
+      .then((res) => res.json())
+      .then((data) => {
+        // Asignamos un ID ÚNICO GLOBAL a cada partido
+        const matchesWithId = data.matches.map((m, index) => ({
+          ...m,
+          globalId: index + 1,
+        }));
+        setMatches(matchesWithId);
+      });
+  }, []);
+
+  // ---------------- CONTADOR Y BLOQUEO ----------------
+  useEffect(() => {
+    if (!matches.length) return;
+
+    // Buscar el primer partido del mundial
+    const firstMatch = matches.reduce((earliest, current) => {
+      const d1 = new Date(`${earliest.date} ${earliest.time}`);
+      const d2 = new Date(`${current.date} ${current.time}`);
+      return d2 < d1 ? current : earliest;
+    });
+
+    // Convertimos la fecha del JSON a formato válido
+    const [day, month, year] = firstMatch.date.split("/");
+
+    const firstMatchDate = new Date(
+      `${year}-${month}-${day}T${firstMatch.time}:00`
+    ).getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = firstMatchDate - now;
+
+      // Si ya empezó el mundial
+      if (diff <= 0) {
+        setLocked(true);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        clearInterval(interval);
+        return;
+      }
+
+      // Si faltan 24h, bloquear edición
+      if (diff <= 24 * 60 * 60 * 1000) {
+        setLocked(true);
+      }
+
+      // Calcular días, horas, minutos, segundos
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [matches]);
+
+  // ---------------- CUANDO EL USUARIO ESCRIBE MARCADOR ----------------
+  const handleScoreChange = (matchId, team, value) => {
+
+    setScores((prev) => {
+      const updated = {
+        ...prev,
+        [matchId]: {
+          ...prev[matchId],
+          [team]: value,
+        },
+      };
+
+      const score = updated[matchId];
+
+      // Guardar SOLO cuando ambos valores existan
+      if (score.home !== undefined && score.away !== undefined) {
+        savePrediction(matchId, score);
+      }
+
+      return updated;
+    });
+  };
+
+  // ---------------- GUARDAR EN SUPABASE ----------------
+  const savePrediction = async (matchId, score) => {
+    await supabase
+      .from("predictions")
+      .upsert(
+        {
+          user_id: user.id,
+          match_id: matchId,
+          predicted_home_goals: Number(score.home),
+          predicted_away_goals: Number(score.away),
+          create_date: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id,match_id",
+        }
+      );
+  };
+
+  // ---------------- CARGAR MARCADORES GUARDADOS ----------------
+  useEffect(() => {
+    if (!user) return;
+
+    const loadPredictions = async () => {
+      const { data } = await supabase
+        .from("predictions")
+        .select("*")
+        .eq("user_id", user.id);
+
+      const loadedScores = {};
+
+      data.forEach((p) => {
+        loadedScores[p.match_id] = {
+          home: p.predicted_home_goals,
+          away: p.predicted_away_goals,
+        };
+      });
+
+      setScores(loadedScores);
     };
 
-    const score = updated[matchId];
+    loadPredictions();
+  }, [user]);
 
-    if (score.home !== undefined && score.away !== undefined) {
-      savePrediction(matchId, score);
-    }
-
-    return updated;
-  });
-};
-  // Guardar en Supabase asociado al usuario
-const savePrediction = async (matchId, score) => {
-  const { error } = await supabase
-    .from("predictions")
-    .upsert(
-      {
-        user_id: user.id,
-        match_id: matchId,
-        predicted_home_goals: Number(score.home),
-        predicted_away_goals: Number(score.away),
-        create_date: new Date().toISOString(),
-      },
-      {
-        onConflict: "user_id,match_id",
-      }
-    );
-
-  if (error) console.error(error);
-};
-
-  // Traer partidos
-useEffect(() => {
-  fetch("https://cdn.jsdelivr.net/gh/pizarro0823/worldcup.json@master/2026/worldcup.json")
-    .then((res) => res.json())
-    .then((data) => {
-      // 👇 asignamos id único REAL a cada partido
-      const matchesWithId = data.matches.map((m, index) => ({
-        ...m,
-        globalId: index + 1,
-      }));
-      setMatches(matchesWithId);
-    });
-}, []);
-
-
-useEffect(() => {
-  if (!matches.length) return;
-
-  // 🥇 Buscar el primer partido (fecha más cercana)
-  const firstMatch = matches.reduce((earliest, current) => {
-    const d1 = new Date(`${earliest.date} ${earliest.time}`);
-    const d2 = new Date(`${current.date} ${current.time}`);
-    return d2 < d1 ? current : earliest;
-  });
-
-  const firstMatchDate = new Date(`${firstMatch.date} ${firstMatch.time}`);
-
-  const interval = setInterval(() => {
-    const now = new Date();
-    const diff = firstMatchDate - now;
-
-    if (diff <= 0) {
-      setCountdown("¡El mundial ya inició!");
-      setLocked(true);
-      clearInterval(interval);
-      return;
-    }
-
-    // ⏰ Calcular horas, minutos, segundos
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    setCountdown(`${hours}h ${minutes}m ${seconds}s`);
-
-    // 🔒 Si faltan 24 horas o menos, bloquear inputs
-    if (diff <= 24 * 60 * 60 * 1000) {
-      setLocked(true);
-    }
-  }, 1000);
-
-  return () => clearInterval(interval);
-}, [matches]);
-
-  // Detectar fase
+  // ---------------- FILTRAR PARTIDOS ----------------
   const detectPhase = (round) => {
     if (round.toLowerCase().includes("matchday")) return "groups";
-    if (round.includes("32")) return "32";
     if (round.toLowerCase().includes("octavos")) return "octavos";
     if (round.toLowerCase().includes("cuartos")) return "cuartos";
     if (round.toLowerCase().includes("semi")) return "semis";
@@ -140,46 +198,6 @@ useEffect(() => {
     return "groups";
   };
 
-  useEffect(() => {
-  if (!user) return;
-
-  const loadPredictions = async () => {
-    const { data, error } = await supabase
-      .from("predictions")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    const loadedScores = {};
-
-    data.forEach((p) => {
-      loadedScores[p.match_id] = {
-        home: p.predicted_home_goals,
-        away: p.predicted_away_goals,
-      };
-    });
-
-    setScores(loadedScores);
-  };
-
-  loadPredictions();
-}, [user]);
-
-  // Opciones del combo
-  const phases = [
-    { value: "groups", label: "Fase de grupos" },
-    { value: "32", label: "Ronda de 32" },
-    { value: "octavos", label: "Octavos" },
-    { value: "cuartos", label: "Cuartos" },
-    { value: "semis", label: "Semifinales" },
-    { value: "final", label: "Final" },
-  ];
-
-  // Filtrar partidos
   const filteredMatches = useMemo(() => {
     return matches.filter((m) => {
       const p = detectPhase(m.round);
@@ -189,10 +207,10 @@ useEffect(() => {
     });
   }, [matches, phase, group]);
 
-  // Splash primero
+  // ---------------- PANTALLAS ----------------
+
   if (loading) return <SplashScreen />;
 
-  // Si no hay usuario, mostrar login limpio
   if (!user) {
     return (
       <Auth
@@ -204,70 +222,77 @@ useEffect(() => {
     );
   }
 
+  // ---------------- UI PRINCIPAL ----------------
   return (
     <div className="page">
 
+      {/* Header */}
       <div className="header-card">
         <div className="welcome">
           <span>Bienvenido</span>
           <strong>{user.name}</strong>
         </div>
-
-        <div className="phase-select">
-          <label>Elige la fase</label>
-          <select value={phase} onChange={(e) => setPhase(e.target.value)}>
-            {phases.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
+      {/* Contador */}
+      <div className="countdown">
+        <span className="cd-item">
+          <strong>{pad(timeLeft.days)}</strong>
+          <small>días</small>
+        </span>
+        <span className="cd-sep">·</span>
+        <span className="cd-item">
+          <strong>{pad(timeLeft.hours)}</strong>
+          <small>horas</small>
+        </span>
+        <span className="cd-sep">·</span>
+        <span className="cd-item">
+          <strong>{pad(timeLeft.minutes)}</strong>
+          <small>min</small>
+        </span>
+        <span className="cd-sep">·</span>
+        <span className="cd-item">
+          <strong>{pad(timeLeft.seconds)}</strong>
+          <small>seg</small>
+        </span>
 
-<div className="countdown-box">
-  ⏳ Faltan para el primer partido: <strong>{countdown}</strong>
-  {locked && (
-    <div className="locked-msg">
-      🔒 Los marcadores están cerrados
-    </div>
-  )}
-</div>
+        {locked && (
+          <div className="locked-msg">
+            🔒 Los marcadores están cerrados
+          </div>
+        )}
+      </div>
 
-
-      {/* Tabs de grupos */}
-      {phase === "groups" && (
-        <div className="groups-bar">
-          {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
-            const current = `Group ${g}`;
-            return (
-              <span
-                key={g}
-                onClick={() => setGroup(current)}
-                className={`group-pill ${group === current ? "active" : ""}`}
-              >
-                {g}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      {/* Tabs grupos */}
+      <div className="groups-bar">
+        {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
+          const current = `Group ${g}`;
+          return (
+            <span
+              key={g}
+              onClick={() => setGroup(current)}
+              className={`group-pill ${group === current ? "active" : ""}`}
+            >
+              {g}
+            </span>
+          );
+        })}
+      </div>
 
       {/* Partidos */}
       <div className="matches">
         {filteredMatches.map((m) => {
-  const matchId = m.globalId; // 🔥 ID ÚNICO REAL DEL JSON
+          const matchId = m.globalId;
 
           return (
-      <MatchCard
-  key={matchId}
-  match={m}
-  matchId={matchId}
-  score={scores[matchId] || {}}
-  onScoreChange={handleScoreChange}
-  locked={locked}
-/>
+            <MatchCard
+              key={matchId}
+              match={m}
+              matchId={matchId}
+              score={scores[matchId] || {}}
+              onScoreChange={handleScoreChange}
+              locked={locked}
+            />
           );
         })}
       </div>

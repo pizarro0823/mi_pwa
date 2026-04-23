@@ -23,6 +23,7 @@ export default function MatchCard({ match, matchId, score, onScoreChange, locked
           <input
             type="number"
             min="0"
+            disabled={locked}
             value={score?.home ?? ""}
             onChange={(e) =>
               onScoreChange(matchId, "home", e.target.value)
@@ -32,6 +33,7 @@ export default function MatchCard({ match, matchId, score, onScoreChange, locked
           <input
             type="number"
             min="0"
+            disabled={locked}
             value={score?.away ?? ""}
             onChange={(e) =>
               onScoreChange(matchId, "away", e.target.value)
