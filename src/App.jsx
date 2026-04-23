@@ -222,7 +222,7 @@ export default function App() {
     );
   }
 
-  // ---------------- UI PRINCIPAL ----------------
+  // ---------------- UI PRINCIPAL   ----------------
   return (
     <div className="page">
 
