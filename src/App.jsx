@@ -36,6 +36,9 @@ export default function App() {
   // Marcadores digitados por el usuario
   const [scores, setScores] = useState({});
 
+  const [officialResults, setOfficialResults] = useState({});
+
+
   // Usuario logueado (se guarda en localStorage)
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user"))
@@ -69,6 +72,27 @@ export default function App() {
         setMatches(matchesWithId);
       });
   }, []);
+
+  // ================= CARGAR RESULTADOS OFICIALES DEL ADMIN =================
+useEffect(() => {
+  const loadOfficialResults = async () => {
+    const { data } = await supabase
+      .from("match_results")
+      .select("*");
+
+    const map = {};
+    data.forEach((r) => {
+      map[r.match_id] = {
+        home: r.home_goals,
+        away: r.away_goals,
+      };
+    });
+
+    setOfficialResults(map);
+  };
+
+  loadOfficialResults();
+}, []);
 
   // ================= CUANDO EL USUARIO CAMBIA UN MARCADOR =================
   const handleScoreChange = (matchId, team, value) => {
@@ -235,6 +259,7 @@ export default function App() {
                       match={m}
                       matchId={matchId}
                       score={scores[matchId] || {}}
+                       official={officialResults[matchId]}  // 👈 NUEVO
                       onScoreChange={handleScoreChange}
                       locked={locked}
                     />

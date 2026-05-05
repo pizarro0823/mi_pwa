@@ -1,22 +1,96 @@
+/* ================= TARJETA ================= */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
 
-/* Equipo en vertical */
-.team.vertical {
+/* ================= HEADER ================= */
+.card-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* ================= FILA PRINCIPAL ================= */
+.teams-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 90px; /* equipos | marcador | equipos */
+  align-items: center;
+  gap: 8px;
+}
+
+/* ================= EQUIPO ================= */
+.team {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 6px;
+  width: 90px;
 }
 
-.team-name {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Bandera más grande porque ahora es protagonista */
+/* ================= BANDERA ================= */
 .flag {
   width: 42px;
-  height: 30px;
+  height: 28px;
   object-fit: cover;
   border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+/* ================= NOMBRE DEL EQUIPO ================= */
+.team-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+
+  /* 🔥 LA MAGIA REAL PARA QUE NO DAÑE EL DISEÑO */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  width: 90px;
+  min-height: 30px;
+}
+
+/* ================= ZONA DE MARCADORES ================= */
+.score-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ================= INPUTS USUARIO ================= */
+.score-inputs input {
+  width: 42px;
+  height: 42px;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+}
+
+/* ================= RESULTADO OFICIAL ================= */
+.official-score {
+  font-size: 12px;
+  font-weight: 700;
+  color: #444;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ================= INFO PARTIDO ================= */
+.match-info {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #777;
+  text-align: center;
 }
