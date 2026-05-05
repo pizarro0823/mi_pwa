@@ -1,27 +1,35 @@
 import { useState } from "react";
 import { supabase } from "./lib/supabase";
 import "./auth.css";
-import logo from "/logo.png"; // pon tu logo dentro de /public
+import logo from "/logo.png";
 
-export default function Auth({ onLogin }) {
+export default function Auth() {
   const [isNew, setIsNew] = useState(false);
-
   const [name, setName] = useState("");
   const [cedula, setCedula] = useState("");
   const [password, setPassword] = useState("");
 
-  // =========================
-  // REGISTRO
-  // =========================
+  // ================= REGISTRO =================
   const handleRegister = async () => {
     if (!name || !cedula || password.length !== 4) {
       alert("Todos los campos son obligatorios y el PIN es de 4 dígitos");
       return;
     }
 
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("cedula", parseInt(cedula))
+      .maybeSingle();
+
+    if (existingUser) {
+      alert("Este usuario ya está registrado");
+      return;
+    }
+
     const { error } = await supabase.from("users").insert([
       {
-        name: name,
+        name,
         cedula: parseInt(cedula),
         password: parseInt(password),
         estado: 1,
@@ -29,16 +37,14 @@ export default function Auth({ onLogin }) {
     ]);
 
     if (error) {
-      alert("La cédula ya existe o hubo un error");
+      alert("Error al crear el usuario");
     } else {
       alert("Usuario creado correctamente");
       setIsNew(false);
     }
   };
 
-  // =========================
-  // LOGIN
-  // =========================
+  // ================= LOGIN =================
   const handleLogin = async () => {
     if (!cedula || password.length !== 4) {
       alert("Datos incompletos");
@@ -55,14 +61,14 @@ export default function Auth({ onLogin }) {
 
     if (error || !data) {
       alert("Usuario inactivo o datos incorrectos");
-    } else {
-
-  localStorage.setItem("user", JSON.stringify(data));
-window.location.reload();
-
-     // localStorage.setItem("user", JSON.stringify(data));
-     // onLogin(data); // ← enviamos el usuario completo a App
+      return;
     }
+
+    // ✅ Guardamos el usuario correctamente
+    localStorage.setItem("user", JSON.stringify(data));
+
+    // ✅ Recargamos la app
+    window.location.reload();
   };
 
   return (
@@ -80,8 +86,6 @@ window.location.reload();
             onChange={(e) => setName(e.target.value)}
           />
         )}
-
-        
 
         <input
           type="number"
@@ -106,7 +110,6 @@ window.location.reload();
           {isNew ? "Ya estoy registrado" : "Usuario nuevo"}
         </p>
       </div>
-    
     </div>
   );
 }

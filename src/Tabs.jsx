@@ -1,13 +1,15 @@
 import { useState } from "react";
 import App from "./App"; // 👈 tu pantalla actual de marcadores
 import "./Tabs.css";
+import Ranking from "./Ranking.jsx";
+
 
 function Resultados() {
   return <div style={{ padding: 20 }}>Resultados oficiales</div>;
 }
 
 function Participantes() {
-  return <div style={{ padding: 20 }}>Tabla de participantes y puntos</div>;
+  return <Ranking />;
 }
 
 function Perfil() {
@@ -28,20 +30,22 @@ function Perfil() {
 export default function Tabs() {
   const [tab, setTab] = useState("mis-marcadores");
 
-  const renderScreen = () => {
-    switch (tab) {
-      case "resultados":
-        return <Resultados />;
-      case "mis-marcadores":
-        return <App />;
-      case "participantes":
-        return <Participantes />;
-      case "perfil":
-        return <Perfil />;
-      default:
-        return <App />;
-    }
-  };
+ const renderScreen = () => {
+  switch (tab) {
+    case "resultados":
+      return <Resultados />;
+    case "mis-marcadores":
+      return <App />;
+    case "salas":
+      return <RoomsTab />;
+    case "participantes":
+      return <Participantes />;
+    case "perfil":
+      return <Perfil />;
+    default:
+      return <App />;
+  }
+};
 
   return (
     <div className="tabs-container">
@@ -78,7 +82,9 @@ export default function Tabs() {
         >
           👤
           <span>Perfil</span>
+          
         </div>
+        
       </div>
     </div>
   );

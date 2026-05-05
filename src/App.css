@@ -353,3 +353,23 @@ h2 {
   font-weight: bold;
   color: #ffcc00;
 }
+.tab-bar {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #eee;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab.active {
+  background: #222;
+  color: white;
+}

@@ -1,66 +1,67 @@
-// Pantalla splash inicial
+// ================= PANTALLA SPLASH =================
 import SplashScreen from "./SplashScreen";
 
-// Hooks de React
+// ================= REACT =================
 import { useEffect, useMemo, useState } from "react";
 
-// Componente de cada partido
+// ================= COMPONENTES =================
 import MatchCard from "./components/MatchCard";
+import Auth from "./Auth";
+import AdminResults from "./pages/admin/AdminResults";
 
-// Estilos
+// ================= ESTILOS =================
 import "./App.css";
 
-// Pantalla de login
-import Auth from "./Auth";
-
-// Conexión a Supabase
+// ================= SUPABASE =================
 import { supabase } from "./lib/supabase";
 
-// Conexion con el contador cuenta regresiva
+// ================= HOOK PERSONALIZADO =================
 import useCountdown from "./hooks/useCountdown";
 
+// ================= ROUTER =================
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 export default function App() {
+  // ================= ESTADOS PRINCIPALES =================
 
-  // ---------------- ESTADOS PRINCIPALES ----------------
-
-  // Lista de partidos del JSON
+  // Lista completa de partidos traídos del JSON
   const [matches, setMatches] = useState([]);
 
-  // Fase seleccionada (grupos, octavos, etc)
+  // Fase actual (grupos, octavos, etc)
   const [phase, setPhase] = useState("groups");
 
-  // Grupo seleccionado
+  // Grupo seleccionado (A, B, C...)
   const [group, setGroup] = useState("Group A");
 
-  // Marcadores escritos (clave = ID ÚNICO DEL PARTIDO)
+  // Marcadores digitados por el usuario
   const [scores, setScores] = useState({});
 
-  // Usuario logueado
+  // Usuario logueado (se guarda en localStorage)
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user"))
   );
 
-  // Cuenta regresiva
-const { timeLeft, locked } = useCountdown(matches);
+  // Hook que bloquea marcadores cuando empieza el partido
+  const { timeLeft, locked } = useCountdown(matches);
 
-  // Splash inicial
+  // Control del splash inicial
   const [loading, setLoading] = useState(true);
 
-  // Función para mostrar siempre 2 dígitos (08, 09, etc)
+  // Función para mostrar 2 dígitos (ej: 04)
   const pad = (n) => String(n).padStart(2, "0");
 
-  // ---------------- SPLASH ----------------
+  // ================= SPLASH 2 SEGUNDOS =================
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
-  // ---------------- TRAER PARTIDOS DEL JSON ----------------
+  // ================= TRAER PARTIDOS DESDE JSON =================
   useEffect(() => {
     fetch("https://cdn.jsdelivr.net/gh/pizarro0823/worldcup.json@master/2026/worldcup.json")
       .then((res) => res.json())
       .then((data) => {
-        // Asignamos un ID ÚNICO GLOBAL a cada partido
+        // Le creamos un ID global para usarlo en BD
         const matchesWithId = data.matches.map((m, index) => ({
           ...m,
           globalId: index + 1,
@@ -69,11 +70,8 @@ const { timeLeft, locked } = useCountdown(matches);
       });
   }, []);
 
- 
-
-  // ---------------- CUANDO EL USUARIO ESCRIBE MARCADOR ----------------
+  // ================= CUANDO EL USUARIO CAMBIA UN MARCADOR =================
   const handleScoreChange = (matchId, team, value) => {
-
     setScores((prev) => {
       const updated = {
         ...prev,
@@ -85,7 +83,7 @@ const { timeLeft, locked } = useCountdown(matches);
 
       const score = updated[matchId];
 
-      // Guardar SOLO cuando ambos valores existan
+      // Cuando ya tiene ambos goles → se guarda en BD
       if (score.home !== undefined && score.away !== undefined) {
         savePrediction(matchId, score);
       }
@@ -94,7 +92,7 @@ const { timeLeft, locked } = useCountdown(matches);
     });
   };
 
-  // ---------------- GUARDAR EN SUPABASE ----------------
+  // ================= GUARDAR PRONÓSTICO EN SUPABASE =================
   const savePrediction = async (matchId, score) => {
     await supabase
       .from("predictions")
@@ -107,12 +105,12 @@ const { timeLeft, locked } = useCountdown(matches);
           create_date: new Date().toISOString(),
         },
         {
-          onConflict: "user_id,match_id",
+          onConflict: "user_id,match_id", // evita duplicados
         }
       );
   };
 
-  // ---------------- CARGAR MARCADORES GUARDADOS ----------------
+  // ================= CARGAR PRONÓSTICOS GUARDADOS =================
   useEffect(() => {
     if (!user) return;
 
@@ -137,7 +135,7 @@ const { timeLeft, locked } = useCountdown(matches);
     loadPredictions();
   }, [user]);
 
-  // ---------------- FILTRAR PARTIDOS ----------------
+  // ================= DETECTAR FASE POR TEXTO =================
   const detectPhase = (round) => {
     if (round.toLowerCase().includes("matchday")) return "groups";
     if (round.toLowerCase().includes("octavos")) return "octavos";
@@ -147,6 +145,7 @@ const { timeLeft, locked } = useCountdown(matches);
     return "groups";
   };
 
+  // ================= FILTRO DE PARTIDOS =================
   const filteredMatches = useMemo(() => {
     return matches.filter((m) => {
       const p = detectPhase(m.round);
@@ -156,10 +155,10 @@ const { timeLeft, locked } = useCountdown(matches);
     });
   }, [matches, phase, group]);
 
-  // ---------------- PANTALLAS ----------------
-
+  // ================= MOSTRAR SPLASH =================
   if (loading) return <SplashScreen />;
 
+  // ================= SI NO HAY USUARIO → LOGIN =================
   if (!user) {
     return (
       <Auth
@@ -171,80 +170,81 @@ const { timeLeft, locked } = useCountdown(matches);
     );
   }
 
-  // ---------------- UI PRINCIPAL   ----------------
+  // ================= RENDER PRINCIPAL CON RUTAS =================
   return (
-    <div className="page">
+    <BrowserRouter>
+      <Routes>
 
-      {/* Header */}
-      <div className="header-card">
-        <div className="welcome">
-          <span>Bienvenido</span>
-          <strong>{user.name}</strong>
-        </div>
-      </div>
+        {/* ================= RUTA ADMIN ================= */}
+        <Route path="/admin" element={<AdminResults />} />
 
-      {/* Contador */}
-      <div className="countdown">
-        <span className="cd-item">
-          <strong>{pad(timeLeft.days)}</strong>
-          <small>días</small>
-        </span>
-        <span className="cd-sep">·</span>
-        <span className="cd-item">
-          <strong>{pad(timeLeft.hours)}</strong>
-          <small>horas</small>
-        </span>
-        <span className="cd-sep">·</span>
-        <span className="cd-item">
-          <strong>{pad(timeLeft.minutes)}</strong>
-          <small>min</small>
-        </span>
-        <span className="cd-sep">·</span>
-        <span className="cd-item">
-          <strong>{pad(timeLeft.seconds)}</strong>
-          <small>seg</small>
-        </span>
+        {/* ================= APP NORMAL ================= */}
+        <Route
+          path="/*"
+          element={
+            <div className="page">
+              
+              {/* Bienvenida */}
+              <div className="header-card">
+                <div className="welcome">
+                  <span>Bienvenido</span>
+                  <strong>{user.name}</strong>
+                </div>
+              </div>
 
-        {locked && (
-          <div className="locked-msg">
-            🔒 Los marcadores están cerrados
-          </div>
-        )}
-      </div>
+              {/* Contador */}
+              <h4>Faltan</h4>
+              <div className="countdown">
+                <span><strong>{pad(timeLeft.days)}</strong> días</span> ·
+                <span><strong>{pad(timeLeft.hours)}</strong> horas</span> ·
+                <span><strong>{pad(timeLeft.minutes)}</strong> min</span> ·
+                <span><strong>{pad(timeLeft.seconds)}</strong> seg</span>
 
-      {/* Tabs grupos */}
-      <div className="groups-bar">
-        {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
-          const current = `Group ${g}`;
-          return (
-            <span
-              key={g}
-              onClick={() => setGroup(current)}
-              className={`group-pill ${group === current ? "active" : ""}`}
-            >
-              {g}
-            </span>
-          );
-        })}
-      </div>
+                {locked && (
+                  <div className="locked-msg">
+                    🔒 Los marcadores están cerrados
+                  </div>
+                )}
+              </div>
 
-      {/* Partidos */}
-      <div className="matches">
-        {filteredMatches.map((m) => {
-          const matchId = m.globalId;
+              {/* Selector de grupos */}
+              <h4>Grupos</h4>
+              <div className="groups-bar">
+                {["A","B","C","D","E","F","G","H","I","J","K","L"].map((g) => {
+                  const current = `Group ${g}`;
+                  return (
+                    <span
+                      key={g}
+                      onClick={() => setGroup(current)}
+                      className={`group-pill ${group === current ? "active" : ""}`}
+                    >
+                      {g}
+                    </span>
+                  );
+                })}
+              </div>
 
-          return (
-            <MatchCard
-              key={matchId}
-              match={m}
-              matchId={matchId}
-              score={scores[matchId] || {}}
-              onScoreChange={handleScoreChange}
-              locked={locked}
-            />
-          );
-        })}
-      </div>
-    </div>
+              {/* Partidos */}
+              <div className="matches">
+                {filteredMatches.map((m) => {
+                  const matchId = m.globalId;
+
+                  return (
+                    <MatchCard
+                      key={matchId}
+                      match={m}
+                      matchId={matchId}
+                      score={scores[matchId] || {}}
+                      onScoreChange={handleScoreChange}
+                      locked={locked}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
